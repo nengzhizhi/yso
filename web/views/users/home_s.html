@@ -1,0 +1,54 @@
+<% include ../header.html %>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h3 id="forms" class="page-header">个人中心：</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>身份：</th><td>学生</td>
+					</tr>
+					<tr>
+						<th>操作：</th>
+						<td>
+							<a href="#" class="btn btn-default" data-toggle="modal" data-target="#answer">上传答疑图片</a>
+							<a href="/room/list" class="btn btn-default">房间列表</a>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</body>
+
+<div id="answer" class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+	      <h4 class="modal-title" id="myModalLabel">答疑</h4>
+	    </div>
+	    <div class="modal-body">
+	    	<img src="/img/temp/xiti1.png">
+	    </div>
+	    <div class="modal-footer">
+	      <button type="button" class="btn btn-primary" id="match">匹配老师</button>
+	    </div>
+
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div>
+
+<script type="text/javascript" src="/js/common/config.js"></script>
+<script type="text/javascript" src="/js/common/keepAlive.js"></script>
+<script type="text/javascript">
+	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol);
+	$('#match').click(function(){
+		alert("开始匹配！");
+		connect.register('answer.match', function (data) {
+			alert("匹配成功！");
+		})
+		connect.send({c: 'answer.match', data: { username: 'tester', role: 'student'}})
+	})
+</script>
+<% include ../footer.html %>

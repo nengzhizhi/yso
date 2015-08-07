@@ -1,0 +1,55 @@
+<% include ../header.html %>
+
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h3 id="forms" class="page-header">个人中心：</h3>
+
+				<% if (user.role=='teacher'){ %>
+				<table class="table table-bordered">
+					<tr>
+						<th>身份：</th><td>老师</td>
+					</tr>
+					<tr>
+						<th>操作：</th>
+						<td>
+							<a href="/answering/rooms" class="btn btn-default">房间列表</a>
+							<a href="/answering/answerings" class="btn btn-default">答疑列表</a>							
+						</td>
+					</tr>
+					<tr>
+						<th>房间管理：</th>
+						<td>
+							<% if(room && room.status == 'closed'){ %>
+								<a href="#" class="btn btn-primary" id="openRoomBtn">开启房间</a>
+								<a href="#" class="btn btn-primary" id="closeRoomBtn" style="display:none">关闭房间</a>
+							<% } else { %>
+								<a href="#" class="btn btn-primary" id="openRoomBtn" style="display:none">开启房间</a>
+								<a href="#" class="btn btn-primary" id="closeRoomBtn">关闭房间</a>
+ 							<% } %>
+ 						</td>
+					</tr>
+				</table>
+				<% } else { %>
+				<table class="table table-bordered">
+					<tr>
+						<th>身份：</th><td>学生</td>
+					</tr>
+					<tr>
+						<th>操作：</th>
+						<td>
+							<a href="/answering/rooms" class="btn btn-default">房间列表</a>
+							<a href="/answering/answerings" class="btn btn-default">答疑列表</a>							
+						</td>
+					</tr>
+				</table>				
+				<% } %>
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" src="/common/connect.js"></script>
+<script type="text/javascript" src="/common/teacher.js"></script>
+
+<% include ../footer.html %>

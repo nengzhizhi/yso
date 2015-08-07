@@ -1,0 +1,29 @@
+<% include ../header.html %>
+<body>
+	<div class="container">
+		<div class="row">
+			<div class="col-sm-12">
+				<h3 id="forms" class="page-header">个人中心：</h3>
+				<table class="table table-bordered">
+					<tr>
+						<th>身份：</th><td>老师</td>
+					</tr>
+					<tr>
+						<th>操作：</th>
+						<td>
+						</td>
+					</tr>
+				</table>				
+			</div>
+		</div>
+	</div>
+</body>
+<script type="text/javascript" src="/js/common/config.js"></script>
+<script type="text/javascript" src="/js/common/keepAlive.js"></script>
+<script type="text/javascript" src="/js/common/teacher.js"></script>
+<script type="text/javascript">
+	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol, function(){
+		teacher.queue();
+	});
+</script>
+<% include ../footer.html %>
