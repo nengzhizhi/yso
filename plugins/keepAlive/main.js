@@ -9,9 +9,10 @@ module.exports = function(options){
 
 	seneca.wsConnections = {};
 	seneca.stConnections = {};
+
 	seneca.messageObservers = {};
-	seneca.closeObservers = {};
-	seneca.connectObservers = {};
+	seneca.closeObservers = [];
+	seneca.connectObservers = [];
 
 	seneca.add({role: 'keepAlive', cmd: 'start'}, cmd_start);
 	seneca.add({role: 'keepAlive', cmd: 'register'}, cmd_register);
@@ -43,7 +44,7 @@ module.exports = function(options){
 
 			connection.on('message', function (message) {
 				var message = JSON.parse(message.utf8Data);
-				console.log(seneca.messageObservers[message.c]);
+
 				for (var key in seneca.messageObservers[message.c]) {
 					seneca.messageObservers[message.c][key](message.data, connection.token);
 				}
@@ -104,6 +105,7 @@ module.exports = function(options){
 			var func = function (token) {
 				seneca.act({role: role, cmd: cmd, data: {token: token}})
 			}
+
 			seneca.closeObservers.push(func); 
 		} else if (type == 'connect') {}
 

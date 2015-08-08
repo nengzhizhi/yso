@@ -1,18 +1,16 @@
 "undefined" === typeof connect && (connect = {});
 (function(c){
 	c.messageObservers = {};
-	console.log('c.messageObservers = ', c.messageObservers);
 	c.init = function(ip, port, protocol, callback){
 		c.ws = new WebSocket("ws://" + ip + ":" + port, protocol);
 
 		c.ws.onopen = function() {
 			console.log('WebSocket connect success!');
-			callback &&callback();
+			callback && callback();
 		}
 
 		c.ws.onmessage = function(event){
 			var message = JSON.parse(event.data);
-			console.log(event.data);
 
 			for (var key in c.messageObservers[message.c]) {
 				c.messageObservers[message.c][key](message.data);

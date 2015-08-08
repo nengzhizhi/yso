@@ -44,11 +44,12 @@
 <script type="text/javascript">
 	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol);
 	$('#match').click(function(){
-		alert("开始匹配！");
 		connect.register('answer.match', function (data) {
 			alert("匹配成功！");
+			window.location.href='http://127.0.0.1:3001/temp/room/s';
 		})
-		connect.send({c: 'answer.match', data: { username: 'tester', role: 'student'}})
+		
+		connect.send({c: 'answer.enter_queue', data: { username: 'student', role: 'student'}})
 	})
 </script>
 <% include ../footer.html %>

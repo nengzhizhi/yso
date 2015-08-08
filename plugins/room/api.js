@@ -10,7 +10,9 @@ module.exports = function(options){
 	seneca.use('/plugins/room/service');
 
 	function onGetRoom(req, res){
-		res.end(JSON.stringify{code: 200, data: { roomID: 'xxxx-xxxx'}});
+		res.end(JSON.stringify({
+			code: 200, data: { roomID: 'xxxx-xxxx' }
+		}));
 	}
 
 	function onListRoom(req, res){
