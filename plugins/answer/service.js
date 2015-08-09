@@ -1,3 +1,4 @@
+var async = require('async');
 var seneca = require('seneca')();
 
 module.exports = function(options){
@@ -27,17 +28,30 @@ module.exports = function(options){
 		if (seneca.teacherQueue.length > 0 && seneca.studentQueue.length > 0) {
 			teacher = seneca.teacherQueue.pop();
 			student = seneca.studentQueue.pop();
-			seneca.act({role: 'keepAlive', cmd: 'broadcast', data: {
-				tokens: [ teacher.token, student.token ],
-				msg: {
-					c: 'answer.match',
-					data: {
-						teacher: teacher.username,
-						student: student.username,
-						answerID: 'xxxx-xxxx-xxxx-xxxx'
-					}
+			//FIXME
+			var answerID = 'xxxx-xxxx-xxxx-xxxx';
+
+			async.waterfall([
+				function (next) {
+					seneca.act({role: 'room', cmd: 'schedule', data: {
+						teacher: teacher.username, student: student.username, answerID: answerID
+					}}, next)					
 				}
-			}})
+			], function (err, result){
+				if (result.status == 'success') {
+					seneca.act({role: 'keepAlive', cmd: 'broadcast', data: {
+						tokens: [ teacher.token, student.token ],
+						msg: {
+							c: 'answer.match',
+							data: {
+								teacher: teacher.username,
+								student: student.username,
+								answerID: answerID
+							}
+						}
+					}})					
+				}
+			})
 			console.log(teacher, student);
 		}
 	}
