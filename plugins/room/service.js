@@ -2,6 +2,7 @@ var _ = require('lodash');
 var seneca = require('seneca')();
 var Room = require('./room.js')
 var roomModel = require('./model.js').roomModel;
+var UUID = require('uuid');
 
 module.exports = function(options){
 	var seneca = this;
@@ -11,6 +12,7 @@ module.exports = function(options){
 	seneca.add({role: 'room', cmd: 'start'}, cmd_start);
 	seneca.add({role: 'room', cmd: 'create'}, cmd_create);
 	seneca.add({role: 'room', cmd: 'get'}, cmd_get);
+	seneca.add({role: 'room', cmd: 'list'}, cmd_list);
 
 	seneca.add({role: 'room', cmd: 'schedule'}, cmd_schedule);
 
@@ -53,16 +55,24 @@ module.exports = function(options){
 		var username = args.data.username;
 		var role = args.data.role;
 
+		var user = { username: username, role: role };
 		//判断用户是否已经进入房间
+		if (seneca.rooms[roomID].hasUser(user)){
+			callback(null, { status: 'success', data: { room: seneca.rooms[roomID] }});
+		} else{
+			callback(null, { status: 'fail' });
+		}
+	}
 
-		roomModel
-		.findOne({ _id: roomID }, function (err, room) {
-			if (_.isEmpty(err) && !_.isEmpty(room)) {
-				callback(null, { status: 'success', data: room });
-			} else {
-				callback(null, { status: 'fail' });
-			}
-		})
+	function cmd_list(args, callback){
+		var rooms = {};
+		for (var key in seneca.rooms) {
+			rooms[key] = {};
+			rooms[key].teacher = seneca.rooms[key].teacher;
+			rooms[key].student = seneca.rooms[key].student;
+			rooms[key].roomID = key;
+		}
+		callback(null, { status:'success', rooms: rooms });
 	}
 
 
@@ -71,7 +81,8 @@ module.exports = function(options){
 		var teacher = args.data.teacher;
 		var student = args.data.student;
 
-		var roomID = Date.now();
+		//FIXME 获取roomID
+		var roomID = UUID.v1();
 		seneca.rooms[roomID] = new Room(roomID, teacher, student);
 
 		callback(null, { status: 'success', data: { roomID: roomID }});
@@ -95,26 +106,7 @@ module.exports = function(options){
 			token: token,
 			msg: {c: 'room.enter', data: { status: status }}
 		}})
-		callback(null, { status: status })
-
-		// roomModel
-		// .findOne({ _id: roomID }, function (err, room) {
-		// 	if (!_.isEmpty(room)) {	
-		// 		if (_.isEmpty(seneca.rooms[roomID])) {
-		// 			seneca.rooms[roomID] = new Room(roomID);
-		// 		}
-		// 		seneca.act({role: 'keepAlive', cmd: 'reply', data: {
-		// 			token: token,
-		// 			msg: {c: 'room.enter', data: { status: 'success' }}
-		// 		}})
-		// 	} else {
-		// 		seneca.act({role: 'keepAlive', cmd: 'reply', data: {
-		// 			token: token,
-		// 			msg: {c: 'room.enter', data: { status: 'fail' }}
-		// 		}})				
-		// 	}
-		// 	callback(null, null);		
-		// });
+		callback(null, { status: status });
 	}
 
 	function cmd_leave_message(args, callback){
@@ -126,6 +118,9 @@ module.exports = function(options){
 		var user = { username: username, role: role, token: token };
 
 		if (!_.isEmpty(seneca.rooms[roomID]) && seneca.rooms[roomID].removeUser(user)) {
+			if (seneca.rooms[roomID].state.name == 'emptyState') {
+				delete seneca.rooms[roomID];
+			}
 			var status = 'success';
 		} else {
 			var status = 'fail';
@@ -139,14 +134,17 @@ module.exports = function(options){
 	}
 
 	function cmd_close_message(args, callback){
-		var roomID = args.data.roomID;
 		var token = args.data.token;
 
-		// if (!_.isEmpty(seneca.rooms[roomID]) && seneca.rooms[roomID].interrupt(token)) {
-		// 	callback(null, { status: 'success' });
-		// } else {
-		// 	callback(null, { status: 'fail' })
-		// }
-		callback(null, null);
+		for (var key in seneca.rooms) {
+			if (seneca.rooms[key].interrupt(token)) {
+				if (seneca.rooms[key].state.name == 'emptyState') {
+					delete seneca.rooms[key];
+				}
+				return callback(null, { status: 'success' });
+			}
+		}
+
+		return callback(null, { status: 'fail' });
 	}
 }

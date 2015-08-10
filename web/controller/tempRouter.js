@@ -13,11 +13,13 @@ tempRouter.get('/home/t', function (req, res) {
 })
 
 tempRouter.get('/room/t', function (req, res) {
-	res.render('room/room_t');
+	var roomID = req.query.id;
+	res.render('room/room_t', { room: { roomID: roomID } });
 })
 
 tempRouter.get('/room/s', function (req, res) {
-	res.render('room/room_s');
+	var roomID = req.query.id;	
+	res.render('room/room_s', { room: { roomID: roomID } });
 })
 
 module.exports = tempRouter;

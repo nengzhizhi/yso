@@ -5,7 +5,7 @@
 		<link href="/css/dashboard.css" rel="stylesheet">
 		<link href="/css/datetimepicker.css" rel="stylesheet">
 
-	<script src="/js/jquery.min.js"></script><script src="/js/bootstrap.min.js"></script>		
+	<script src="/js/common/jquery.min.js"></script><script src="/js/common/bootstrap.min.js"></script>		
 	</head>
 	<body>
 
@@ -22,8 +22,13 @@
         </div>
 		<div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
+          <% if(user.username){ %>
+            <li><a href="/users/home"><%-user.username %></a></li>
+            <li><a href="/users/logout">退出</a></li></li>                
+          <% } else { %>
             <li><a href="/users/login">登录</a></li>
-            <li><a href="/users/register">注册</a></li></li>
+            <li><a href="/users/register">注册</a></li></li>          
+          <% } %>
           </ul>
         </div>
       </div>

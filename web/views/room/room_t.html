@@ -1,25 +1,58 @@
 <% include ../header.html %>
 <div class="container" id="result">
 </div>
+<div class="container">
+	<a href="#" class="btn btn-primary" id="recordBtn">开始录音</a>
+</div>
 <script type="text/javascript" src="/js/common/config.js"></script>
 <script type="text/javascript" src="/js/common/keepAlive.js"></script>
 <script type="text/javascript">
-	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol, function () {
-		connect.register('room.enter', function (data) {
-			if (data.status == 'success') {
-				$.get('http://127.0.0.1:6003/api/room/get?id=55c1f20a1c7424d54715a998', function (data) {
-					data = JSON.parse(data);
-					if (data.code == 200) {
-						$('#result').html("进入页面成功！开始渲染页面.......<br>username: teacher, role: teacher");
-						//渲染页面
-					}
-				})
-			} else {
-				$('#result').html("进入页面失败！");
-				//提示错误!
-			}
+	// config.answerID = '<%- room.answerID %>';
+	// connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol, function () {
+	// 	connect.register('room.enter', function (data) {
+	// 		if (data.status == 'success') {
+	// 			$.get('http://127.0.0.1:6003/api/room/get?id=<%-room.roomID %>', function (data) {
+	// 				data = JSON.parse(data);
+	// 				if (data.code == 200) {
+	// 					$('#result').html("进入页面成功！开始渲染页面.......<br>username: <%-user.username %>, role: <%-user.role %>");
+	// 					//渲染页面
+
+	// 					//否则离开页面
+	// 				}
+	// 			})
+	// 		} else {
+	// 			$('#result').html("进入页面失败！");
+	// 			//提示错误!
+	// 		}
+	// 	})
+	// 	connect.send({c: 'room.enter', data: { roomID: '<%-room.roomID %>', username: '<%-user.username %>', role: '<%-user.role %>'}});
+	// });
+</script>
+<!--音频处理-->
+<script type="text/javascript" src="/js/audio/recorder.js"></script>
+<script type="text/javascript">
+function startAudio(){
+  window.AudioContext = window.AudioContext || window.webkitAudioContext;
+  var audioContext = new AudioContext();
+  var audioInput;
+
+  function gotStream(stream){
+    audioInput = audioContext.createMediaStreamSource(stream);
+    recorder.init(audioInput);
+    recorder.record();
+  }
+
+  navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+  navigator.getUserMedia({"audio": true}, gotStream, function(e){
+    if (e) console.log('get user media err: ' + JSON.stringify(e))
+  });    
+}
+</script>
+<script type="text/javascript">
+	$(document).ready(function(){
+		$('#recordBtn').click(function(){
+			startAudio();
 		})
-		connect.send({c: 'room.enter', data: { roomID: '55c1f20a1c7424d54715a998', username: 'teacher', role: 'teacher'}});
-	});
+	})
 </script>
 <% include ../footer.html %>

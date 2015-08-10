@@ -1,13 +1,26 @@
 var async = require('async');
+var _ = require('lodash');
+var UUID =require('uuid');
 var seneca = require('seneca')();
+var answerModel = require('./model.js').answerModel;
+var audioSliceModel = require('./model.js').audioSliceModel;
 
 module.exports = function(options){
 	var seneca = this;
 
 	seneca.teacherQueue = [];
 	seneca.studentQueue = [];
+	seneca.answers = {};
 
 	seneca.add({role: 'answer', cmd: 'start'}, cmd_start);
+	
+	seneca.add({role: 'answer', cmd: 'createAnswer'}, cmd_createAnswer);
+	seneca.add({role: 'answer', cmd: 'updateAnswer'}, cmd_updateAnswer);
+	seneca.add({role: 'answer', cmd: 'getAnswer'}, cmd_getAnswer);
+
+	seneca.add({role: 'answer', cmd: 'addAudioSlice'}, cmd_addAudioSlice);
+	seneca.add({role: 'answer', cmd: 'getAudioSlice'}, cmd_getAudioSlice);
+
 	seneca.add({role: 'answer', cmd: 'enter_queue_message'}, cmd_enter_queue_message);
 	seneca.add({role: 'answer', cmd: 'leave_queue_message'}, cmd_leave_queue_message);
 
@@ -17,10 +30,70 @@ module.exports = function(options){
 			role: 'answer', cmd: 'enter_queue_message', type: 'message', c: 'answer.enter_queue'
 		}})
 		seneca.act({role: 'keepAlive', cmd: 'register', data: {
-			role: 'answer', cmd: 'levae_queue_message', type: 'message', c: 'answer.leave_queue'
+			role: 'answer', cmd: 'leave_queue_message', type: 'message', c: 'answer.leave_queue'
 		}})
 		setInterval(_matchAnswer, 2000);
 		callback(null, null);
+	}
+
+	function cmd_createAnswer(args, callback){
+		var teacher = args.data.teacher;
+		var student = args.data.student;
+		var roomID = args.data.roomID;
+		var answerID = args.data.answerID;
+
+		var answer = answerModel();
+		answer.teacher = teacher;
+		answer.student = student;
+		answer.audio = null;
+		answer.roomID = roomID;
+		answer.answerID = answerID;
+		answer.save(function (err) {
+			if (_.isEmpty(err)) {
+				callback(null, { status: 'success' });
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		})
+	}
+
+	function cmd_updateAnswer(args, callback) {
+		callback(null, null);
+	}
+
+	function cmd_getAnswer(args, callback){
+		callback(null, null);
+	}
+
+	function cmd_addAudioSlice(args, callback){
+		var answerID = args.data.answerID;
+		var key = args.data.key;
+
+		var audioSlice = new audioSliceModel();
+
+		audioSlice.answerID = answerID;
+		audioSlice.key = key;
+
+		audioSlice.save(function (err) {
+			if (_.isEmpty(err)) {
+				callback(null, { status: 'success' });
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		})
+	}
+
+	function cmd_getAudioSlice(args, callback){
+		audioSliceModel
+		.find(args.data)
+		.sort({ key: 1 })
+		.exec(function (err, slices){
+			if (!_.isEmpty(slices)) {
+				callback(null, { status: 'success', slices: slices})
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		})		
 	}
 
 	function _matchAnswer(){
@@ -28,8 +101,8 @@ module.exports = function(options){
 		if (seneca.teacherQueue.length > 0 && seneca.studentQueue.length > 0) {
 			teacher = seneca.teacherQueue.pop();
 			student = seneca.studentQueue.pop();
-			//FIXME
-			var answerID = 'xxxx-xxxx-xxxx-xxxx';
+
+			var answerID = UUID.v4().toString();
 
 			async.waterfall([
 				function (next) {
@@ -38,7 +111,12 @@ module.exports = function(options){
 					}}, next)					
 				}
 			], function (err, result){
+				console.log(result);
 				if (result.status == 'success') {
+					seneca.act({role: 'answer', cmd: 'createAnswer', data: {
+						student: student.username, teacher: teacher.username, answerID: answerID, roomID: result.data.roomID
+					}})
+
 					seneca.act({role: 'keepAlive', cmd: 'broadcast', data: {
 						tokens: [ teacher.token, student.token ],
 						msg: {
@@ -46,13 +124,13 @@ module.exports = function(options){
 							data: {
 								teacher: teacher.username,
 								student: student.username,
-								answerID: answerID
+								answerID: answerID,
+								roomID: result.data.roomID
 							}
 						}
 					}})					
 				}
 			})
-			console.log(teacher, student);
 		}
 	}
 
@@ -65,6 +143,8 @@ module.exports = function(options){
 		var role = args.data.role;
 		var token = args.data.token;
 
+		//TODO 检查是否有进入队列的权限
+		//如果已经在答疑中无法进入答疑队列
 		if (role == 'teacher') {
 			for (var key in seneca.teacherQueue) {
 				if (seneca.teacherQueue[key].username == username) {

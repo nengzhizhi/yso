@@ -13,5 +13,6 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 //TODO change key
 app.use(cookieParser('key'));
-app.use('/temp', require('./controller/tempRouter'));
+app.use('/room', require('./controller/roomRouter'));
+app.use('/users', require('./controller/usersRouter'));
 app.listen(3001);

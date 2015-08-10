@@ -11,7 +11,12 @@
 					<tr>
 						<th>操作：</th>
 						<td>
-							<a href="#" class="btn btn-default" data-toggle="modal" data-target="#answer">上传答疑图片</a>
+						    <div id="container">
+								<a class="btn btn-success" id="pickfiles" href="#">
+								  <i class="glyphicon glyphicon-plus"></i>
+								  <sapn>上传问题图片</sapn>
+								</a>
+							</div>
 							<a href="/room/list" class="btn btn-default">房间列表</a>
 						</td>
 					</tr>
@@ -29,10 +34,28 @@
 	      <h4 class="modal-title" id="myModalLabel">答疑</h4>
 	    </div>
 	    <div class="modal-body">
-	    	<img src="/img/temp/xiti1.png">
+	    	<div id="questionImg"></div>
 	    </div>
 	    <div class="modal-footer">
-	      <button type="button" class="btn btn-primary" id="match">匹配老师</button>
+	      <button type="button" class="btn btn-primary" id="match" data-toggle="modal" data-target="#queue">匹配老师</button>
+	    </div>
+
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div>
+
+<div id="queue" class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+	      <h4 class="modal-title" id="myModalLabel">等待答疑</h4>
+	    </div>
+	    <div class="modal-body">
+	    	<h4>您已进入答疑队列，您前面有2位学生，请耐心等待...</h4>
+	    </div>
+	    <div class="modal-footer">
+	      <button type="button" class="btn btn-primary" id="leaveQueue">退出答疑队列</button>
 	    </div>
 
 	  </div><!-- /.modal-content -->
@@ -45,11 +68,22 @@
 	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol);
 	$('#match').click(function(){
 		connect.register('answer.match', function (data) {
+			console.log(data.answerID);
 			alert("匹配成功！");
-			window.location.href='http://127.0.0.1:3001/temp/room/s';
+			window.location.href='http://127.0.0.1:3001/room/get?id=' + data.roomID;
 		})
 		
-		connect.send({c: 'answer.enter_queue', data: { username: 'student', role: 'student'}})
+		connect.register('answer.enter_queue', function (data) {
+			//TODO
+		})
+
+		connect.send({	c: 'answer.enter_queue', 
+						data: { username: '<%-user.username %>', role: '<%-user.role %>', question:{ } }});
 	})
 </script>
+
+<script type="text/javascript" src="/js/qiniu/plupload/plupload.full.min.js"></script>
+<script type="text/javascript" src="/js/qiniu/plupload/i18n/zh_CN.js"></script>
+<script type="text/javascript" src="/js/qiniu/qiniu.js"></script>
+<script type="text/javascript" src="/js/qiniu/main.js"></script>
 <% include ../footer.html %>

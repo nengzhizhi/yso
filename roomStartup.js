@@ -22,4 +22,4 @@ api
 	next();
 })
 .use(seneca.export('web'))
-.listen(6003);
+.listen(2003);

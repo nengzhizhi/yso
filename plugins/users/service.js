@@ -32,36 +32,4 @@ module.exports = function(options) {
 			callback(err, result);
 		});
 	}
-
-// 	function cmd_checkLogin(args, callback){
-// 		if (args.data && args.data.cookies ) {
-// 			var hmac = crypto.createHmac('sha1', key);
-			
-// 			var username = args.data.cookies.username;
-// 			var role = args.data.cookies.role;
-// 			var sign = args.data.cookies.sign;
-
-// 			var str = new Buffer(username + role).toString('hex');
-
-// 			hmac.update(str);
-// 			if (hmac.digest('hex') == sign) {
-// 				callback(null, {username : username, role : role});
-// 			} else {
-// 				callback(null, null);
-// 			}
-// 		} else{
-// 			callback(null, null);
-// 		}
-
-// 		//callback(null, {username:'nengzhizhi',role:'student'});
-// 	}
-
-// 	function cmd_sign(args, callback){
-// 		var hmac = crypto.createHmac('sha1', key);
-// 		var username = args.data.username;
-// 		var role = args.data.role;
-// 		var str = new Buffer(username + role).toString('hex');
-// 		hmac.update(str);
-// 		callback(null, {val : hmac.digest('hex')});
-// 	}
 }

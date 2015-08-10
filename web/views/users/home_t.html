@@ -11,7 +11,7 @@
 					<tr>
 						<th>操作：</th>
 						<td>
-							<a href="#" class="btn btn-default" id="enterQueue">进入答疑队列</a>
+							<a href="#" class="btn btn-default" id="enterQueue" data-toggle="modal" data-target="#queue">进入答疑队列</a>
 						</td>
 					</tr>
 				</table>				
@@ -26,11 +26,31 @@
 
 	$('#enterQueue').click(function(){
 		connect.register('answer.match', function (data) {
+			console.log(data.answerID);
 			alert('匹配成功，进入房间！');
-			window.location.href='http://127.0.0.1:3001/temp/room/t';
+			window.location.href='http://127.0.0.1:3001/room/get?id=' + data.roomID;
 		});
 
-		connect.send({c: 'answer.enter_queue', data: { username: 'teacher', role: 'teacher' }});
+		connect.send({	c: 'answer.enter_queue', 
+						data: { username: '<%-user.username %>', role: '<%-user.role %>' }});
 	})
 </script>
 <% include ../footer.html %>
+
+<div id="queue" class="modal fade in" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+	    <div class="modal-header">
+	      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+	      <h4 class="modal-title" id="myModalLabel">等待答疑</h4>
+	    </div>
+	    <div class="modal-body">
+	    	<h4>您已进入答疑队列，您前面有2位老师，请耐心等待...</h4>
+	    </div>
+	    <div class="modal-footer">
+	      <button type="button" class="btn btn-primary" id="leaveQueue">退出答疑队列</button>
+	    </div>
+
+	  </div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div>

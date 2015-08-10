@@ -58,7 +58,7 @@ module.exports = function(options){
 			seneca.stConnections[connection.token] = connection;
 
 			connection.on('data', function (data) {
-				var data = Buffer.isBuffer(data) ? JSON.parse(data.toString()) : JSON.parse(data);
+				var message = Buffer.isBuffer(data) ? JSON.parse(data.toString()) : JSON.parse(data);
 
 				for (var key in seneca.messageObservers[message.c]) {
 					seneca.messageObservers[message.c][key](message.data, connection.token);
@@ -74,7 +74,7 @@ module.exports = function(options){
 			connection.on('error', function (err) {
 				console.log("socket error" + err);
 			})
-		}).listen(100002);
+		}).listen(10002);
 
 		callback(null, null);
 	}
@@ -121,7 +121,7 @@ module.exports = function(options){
 			if (!_.isEmpty(seneca.wsConnections[token])){
 				seneca.wsConnections[token].sendUTF(JSON.stringify(msg));
 			} else if(!_.isEmpty(seneca.stConnections[token])) {
-				seneca.stConnections[token].send(JSON.stringify(msg));
+				seneca.stConnections[token].write(JSON.stringify(msg) + '\r\n');
 			}
 		}
 
@@ -135,7 +135,7 @@ module.exports = function(options){
 		if (!_.isEmpty(seneca.wsConnections[token])) {
 			seneca.wsConnections[token].sendUTF(JSON.stringify(msg));
 		} else if(!_.isEmpty(seneca.stConnections[token])) {
-			seneca.stConnections[token].send(JSON.stringify(msg));
+			seneca.stConnections[token].write(JSON.stringify(msg) + '\r\n');
 		}
 		callback(null, null);
 	}

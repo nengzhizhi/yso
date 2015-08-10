@@ -13,7 +13,6 @@ module.exports = function (options) {
 	})});
 
 	seneca.use('/plugins/users/service');
-	seneca.use('/plugins/answering/service');
 
 	function onRegister(req, res){
 		req.body.username && req.sanitize('username').escape().trim();
@@ -59,14 +58,6 @@ module.exports = function (options) {
 				})
 			}
 		}, function (err, result) {
-			if (req.body.role == 'teacher') {
-				seneca.act({
-					role: 'answering', 
-					cmd: 'createRoom', 
-					data: {
-						owner: req.body.username
-					}})
-			}
 			if (!_.isEmpty(err)) {
 				res.end(JSON.stringify(error.InternalError()));
 			} else {

@@ -1,3 +1,4 @@
+var _ = require('lodash');
 
 //---------------------------------------------------------------------------
 function emptyState(room){
@@ -72,6 +73,10 @@ function answeringState(room){
 	}
 
 	self.removeUser = function(user){
+		if (self.room.hasUser(user)) {
+			self.room.setState(self.room.emptyState);
+			return true;
+		}
 		return false;
 	}
 }
@@ -82,11 +87,11 @@ function Room(roomID, teacher, student){
 	self.roomID = roomID;
 	self.teacher = teacher;
 	self.student = student;
-	self.users = [];
+	self.users = {};
 
 	self.addUser = function(user){
 		if (self.state.addUser(user)){
-			self.users.push(user);
+			self.users[user.username] = user;
 			return true;
 		}
 		return false;
@@ -94,17 +99,27 @@ function Room(roomID, teacher, student){
 
 	self.removeUser = function(user){
 		if (self.state.removeUser(user)){
-			self.users.splice(user, 1);
+			delete self.users[user.username];
 			return true;
 		}
 		return false;
 	}
 
+	self.hasUser = function(user){
+		return !_.isEmpty(self.users[user.username]);
+	}
+
 	self.interrupt = function(token){
+		for (var key in self.users) {
+			if(self.users[key].token == token) {
+				return self.removeUser(self.users[key]);
+			}
+		}
 		return false;
 	}
 
 	self.setState = function(state){
+		console.log("setState = " + state.name);
 		self.state = state;
 	}
 
