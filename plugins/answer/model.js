@@ -14,7 +14,7 @@ var answerSchema = new Schema({
 });
 
 var audioSliceSchema = new Schema({
-	answerID: ObjectId,
+	answerID: String,
 	key: String,
 	status: { type:String, required: false, default: 'alone'},
 	created: { type: Date, default: Date.now }

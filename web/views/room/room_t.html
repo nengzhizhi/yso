@@ -44,7 +44,8 @@ function startAudio(){
 
   navigator.getUserMedia = navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
   navigator.getUserMedia({"audio": true}, gotStream, function(e){
-    if (e) console.log('get user media err: ' + JSON.stringify(e))
+    //if (e) console.log('get user media err: ' + JSON.stringify(e))
+  	if (e) alert('获取麦克风失败！');
   });    
 }
 </script>

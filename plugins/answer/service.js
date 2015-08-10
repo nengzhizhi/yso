@@ -58,11 +58,26 @@ module.exports = function(options){
 	}
 
 	function cmd_updateAnswer(args, callback) {
-		callback(null, null);
+		answerModel
+		.where(args.queryData)
+		.update(args.updateData, function (err, result) {
+			if ( result.ok > 0) {
+				callback(null, { status: 'success' });
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		});
 	}
 
 	function cmd_getAnswer(args, callback){
-		callback(null, null);
+		answerModel
+		.findOne(args.data, function (err, answer) {
+			if (!_.isEmpty(answer)) {
+				callback(null, { status: 'success', answer: answer });
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		})
 	}
 
 	function cmd_addAudioSlice(args, callback){
@@ -161,7 +176,7 @@ module.exports = function(options){
 			seneca.studentQueue.push({ username: username, token: token })
 		}
 
-		callback(null, null);
+		callback(null, { status: 'success' });
 	}
 
 	function cmd_leave_queue_message(args, callback){

@@ -1,5 +1,6 @@
+var async = require('async');
+var _ = require('lodash');
 var qiniu = require('qiniu');
-var http = require('http');
 
 module.exports = function(options){
 	var seneca = this;
@@ -38,10 +39,10 @@ module.exports = function(options){
 			}
 		}, function (err, result) {
 			if(result && result.status == 'success') {
-				res.end(JSON.stringify({ code: 200 }));
+				return res.end(JSON.stringify({ code: 200 }));
 			} else {
 				//FIXME
-				res.end(JSON.stringify({ code: 201 }))
+				return res.end(JSON.stringify({ code: 201 }))
 			}
 		})
 	}
@@ -49,14 +50,80 @@ module.exports = function(options){
 	function onConcatAudioSlice(req, res){
 		//TODO check input
 		var answerID = req.body.answerID;
+
+		async.waterfall([
+			function (next) {
+				seneca.act({role: 'answer', cmd: 'getAnswer', data: { answerID: answerID, savingStatus: 'waiting' }}, next);
+			}, function (result, next) {
+				if (result && result.status == 'success' && !_.isEmpty(result.answer)) {
+					seneca.act({role: 'answer', cmd: 'getAudioSlice', data: { answerID: answerID }}, next);
+				} else {
+					//FIXME
+					return res.end(JSON.stringify({ code: 302 }));
+				}
+			}, function (result, next) {
+				console.log(result);
+				if (result && result.status == 'success') {
+					//将答疑音频状态更新为saving
+					seneca.act({
+					    role: 'answer',
+					    cmd: 'updateAnswer',
+					    queryData: {
+					        answerID: answerID
+					    },
+					    updateData: {
+					        savingStatus: 'saving'
+					    }
+					});
+
+					//调用七牛接口拼接音频
+					_qiniuConcat(result.slices, answerID, next);
+				} else {
+					//FIXME
+					return res.end(JSON.stringify({ code: 202 }));
+				}
+			}
+		], function (err, result) {
+			if (result && result.status == 'success') {
+				return res.end(JSON.stringify({ code: 200 }));
+			} else {
+				//FIXME
+				return res.end(JSON.stringify({ code: 202 }));				
+			}
+		})
 	}
 
 	function onConcatCallback(req, res){
+		console.log(req.body);
+		var prefix = 'http://7xkjiu.media1.z0.glb.clouddn.com/';
+		var answerID = req.query.id;
+
+		if (req.body.code == 0) {
+			seneca.act({
+			    role: 'answer',
+			    cmd: 'updateAnswer',
+			    queryData: {
+			        answerID: answerID
+			    },
+			    updateData: {
+			        savingStatus: 'success',
+			        audio: prefix + req.body.items[0].key
+			    }
+			}, function (err, result) {
+				if (result && result.status == 'success') {
+					return res.end(JSON.stringify({ code: 200 }));
+				}
+			});
+		}
+		//FIXME
+		return res.end(JSON.stringify({ code: 201}));
 	}
 
-	function _qiniuConcat(slices, notifyURL, callback){
+	function _qiniuConcat(slices, answerID, callback){
+		console.log('_qiniuConcat');
 		//TODO 在配置文件或者配置服务中读取
 		var spacename = 'sounds';
+		var notifyURL = 'http://vgame.tv/api/answer/concatCallback?id=' + answerID;
 		var prefix = 'http://7xkjiu.media1.z0.glb.clouddn.com/';
 		var ACCESS_KEY = 'zQKgGIPr-OBfpGn82vgqGF8iPeZO6qwO9LMtaJsk';
 		var SECRET_KEY = '5FFoL8KBg-9l1AMEoaXIuIjKbqYlgn0eJ_y7LNhn';
