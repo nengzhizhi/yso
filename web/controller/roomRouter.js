@@ -6,9 +6,12 @@ var seneca = require('seneca')();
 seneca.client({host: '127.0.0.1', port: 7003, pin: {role:'room',cmd:'*'}});
 
 roomRouter.get('/get', function (req, res) {
-	if (req.signedCookies) {
+	if (req.signedCookies && req.signedCookies.role == 'teacher') {
 		var roomID = req.query.id;
 		res.render('room/room_t', { room: {roomID: roomID }, user: req.signedCookies });
+	} else if (req.signedCookies && req.signedCookies.role == 'student') {
+		var roomID = req.query.id;
+		res.render('room/room_s', { room: {roomID: roomID }, user: req.signedCookies });		
 	} else {
 		res.redirect('/users/login');
 	}

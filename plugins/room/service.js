@@ -80,10 +80,11 @@ module.exports = function(options){
 		var answerID = args.data.answerID;
 		var teacher = args.data.teacher;
 		var student = args.data.student;
+		var question = args.data.question;
 
 		//FIXME 获取roomID
 		var roomID = UUID.v1();
-		seneca.rooms[roomID] = new Room(roomID, teacher, student);
+		seneca.rooms[roomID] = new Room(roomID, teacher, student, question);
 
 		callback(null, { status: 'success', data: { roomID: roomID }});
 	}
@@ -104,7 +105,7 @@ module.exports = function(options){
 
 		seneca.act({role: 'keepAlive', cmd: 'reply', data: {
 			token: token,
-			msg: {c: 'room.enter', data: { status: status }}
+			msg: {c: 'room.enter', data: { status: status, question: seneca.rooms[roomID].question }}
 		}})
 		callback(null, { status: status });
 	}
@@ -135,9 +136,12 @@ module.exports = function(options){
 
 	function cmd_close_message(args, callback){
 		var token = args.data.token;
+		console.log('cmd_close_message :' + args.data.token);
 
 		for (var key in seneca.rooms) {
 			if (seneca.rooms[key].interrupt(token)) {
+
+				//TODO 这里改成定时删除，就是pending的效果
 				if (seneca.rooms[key].state.name == 'emptyState') {
 					delete seneca.rooms[key];
 				}

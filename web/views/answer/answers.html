@@ -1,0 +1,33 @@
+<% include ../header.html %>
+<div class="container">
+	<div class="row">
+		<div class="col-sm-12">
+			<h3 id="forms" class="page-header">答疑列表：</h3>	
+				<table class="table">
+					<tdead>
+						<tr>
+							<td>答疑编号</td>
+							<td>老师</td>
+							<td>学生</td>
+							<td>答疑时间</td>
+							<td>操作</td>
+						</tr>
+					</tdead>
+					<tbody>
+						<% for(var key in answers){ %>
+						<tr>
+							<td><%- answers[key].answerID %></td>
+							<td><%- answers[key].teacher %></td>
+							<td><%- answers[key].student %></td>
+							<td><%- answers[key].created %></td>
+							<td>
+								<a href="#" class="btn btn-default">回看答疑</a>
+							</td>
+						</tr>
+						<% } %>
+					</tbody>
+				</table>
+		</div>
+	</div>
+</div>
+<% include ../footer.html %>

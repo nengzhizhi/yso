@@ -11,6 +11,7 @@ module.exports = function(options){
 
 	seneca.act('role:web', { use: router(function (app) {
 		app.get('/api/answer/uploadToken', onUploadToken);
+		app.post('/api/answer/getAnswers', onGetAnswers);
 		app.post('/api/answer/addAudioSlice', onAddAudioSlice);
 		app.post('/api/answer/concatAudioSlice', onConcatAudioSlice);
 		app.post('/api/answer/concatCallback', onConcatCallback);
@@ -25,6 +26,28 @@ module.exports = function(options){
 		putPolicy.deadline = Date.now()/1000 + 720000;
 		//putPolicy.expires = 60;
 		res.end(JSON.stringify({'uptoken':putPolicy.token()}));		
+	}
+
+	function onGetAnswers(req, res){
+		var queryData;
+		if (req.signedCookies.role == 'teacher') {
+			queryData = {teacher:req.signedCookies.username};
+		} else if(req.signedCookies.role == 'student') {
+			queryData = {student:req.signedCookies.username};
+		} else {
+			//FIXME
+			return res.end(JSON.stringify({ code: 301 }));
+		}
+
+		seneca.act({ role: 'answer', cmd: 'getAnswers', data: queryData }, function (err, result) {
+			if (result && result.status == 'success') {
+				//FIXME
+				res.end(JSON.stringify({ code: 200, data: { answers: result.answers } }));
+			} else {
+				//FIXME
+				res.end(JSON.stringify({ code: 302 }))
+			}
+		})
 	}
 
 	function onAddAudioSlice(req, res){

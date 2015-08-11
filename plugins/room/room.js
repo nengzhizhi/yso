@@ -38,6 +38,10 @@ function teacherReadyState(room){
 	}
 
 	self.removeUser = function(user){
+		if (self.room.hasUser(user) && self.room.teacher == user.username) {
+			self.room.setState(self.room.emptyState);
+			return true;
+		}		
 		return false;
 	}
 }
@@ -58,6 +62,10 @@ function studentReadyState(room){
 	}
 
 	self.removeUser = function(user){
+		if (self.room.hasUser(user) && self.room.student == user.username) {
+			self.room.setState(self.room.emptyState);
+			return true;
+		}	
 		return false;
 	}
 }
@@ -73,20 +81,24 @@ function answeringState(room){
 	}
 
 	self.removeUser = function(user){
-		if (self.room.hasUser(user)) {
-			self.room.setState(self.room.emptyState);
+		if (self.room.hasUser(user) && self.room.teacher == user.username) {
+			self.room.setState(self.room.studentReadyState);
 			return true;
+		} else if (self.room.hasUser(user) && self.room.student == user.username) {
+			self.room.setState(self.room.teacherReadyState);
+			return true;			
 		}
 		return false;
 	}
 }
 //---------------------------------------------------------------------------
 
-function Room(roomID, teacher, student){
+function Room(roomID, teacher, student, question){
 	var self = this;
 	self.roomID = roomID;
 	self.teacher = teacher;
 	self.student = student;
+	self.question = question;
 	self.users = {};
 
 	self.addUser = function(user){

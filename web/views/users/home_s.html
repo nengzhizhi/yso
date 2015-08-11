@@ -18,6 +18,7 @@
 								</a>
 							</div>
 							<a href="/room/list" class="btn btn-default">房间列表</a>
+							<a href="/answer/answers" class="btn btn-default">答疑列表</a>
 						</td>
 					</tr>
 				</table>
@@ -34,12 +35,41 @@
 	      <h4 class="modal-title" id="myModalLabel">答疑</h4>
 	    </div>
 	    <div class="modal-body">
-	    	<div id="questionImg"></div>
+	    <div class="row">
+	    	<div class="col-sm-6">
+				<div class="dropdown">
+				  <button class="btn btn-default dropdown-toggle" type="button" id="subject" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				    选择科目
+				    <span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu" aria-labelledby="subject">
+				    <li><a href="#" onclick="changeSubjectValue(1)">数学</a></li>
+				  </ul>
+				  <input id="subjectValue" type="hidden" value="1">
+				</div>
+			</div>	
+
+
+			<div class="col-sm-6">
+				<div class="dropdown">
+				  <button class="btn btn-default dropdown-toggle" type="button" id="grade" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+				    选择年级
+				    <span class="caret"></span>
+				  </button>
+				  <ul class="dropdown-menu" aria-labelledby="grade">
+				    <li><a href="#" onclick="changeGradeValue(101)">小学一年级</a></li>
+				  </ul>
+				  <input id="gradeValue" type="hidden" value="101">
+				</div>
+			</div>
+		</div>
+		<div id="questionImg"></div>
+		<input id="imgUrlValue" type="hidden" value="http://xxx.png">
 	    </div>
 	    <div class="modal-footer">
 	      <button type="button" class="btn btn-primary" id="match" data-toggle="modal" data-target="#queue">匹配老师</button>
 	    </div>
-
+	    </div>
 	  </div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
 </div>
@@ -70,16 +100,35 @@
 		connect.register('answer.match', function (data) {
 			console.log(data.answerID);
 			alert("匹配成功！");
-			window.location.href='http://127.0.0.1:3001/room/get?id=' + data.roomID;
+			window.location.href='http://vgame.tv/room/get?id=' + data.roomID;
 		})
 		
 		connect.register('answer.enter_queue', function (data) {
 			//TODO
 		})
 
+		var question = {
+			subject: $('#subjectValue').val(),
+			grade: $('#gradeValue').val(),
+			imgUrl: $('#imgUrlValue').val()
+		}
+		
 		connect.send({	c: 'answer.enter_queue', 
-						data: { username: '<%-user.username %>', role: '<%-user.role %>', question:{ } }});
+						data: { 
+							username: '<%-user.username %>', 
+							role: '<%-user.role %>',
+							question: question
+						}
+					});
 	})
+
+	function changeSubjectValue(v){
+		$('#subjectValue').val(v);
+	}
+
+	function changeGradeValue(v){
+		$('#gradeValue').val(v);
+	}
 </script>
 
 <script type="text/javascript" src="/js/qiniu/plupload/plupload.full.min.js"></script>

@@ -8,9 +8,13 @@ var answerSchema = new Schema({
 	student: String,
 	audio: String,
 	savingStatus:  { type:String, required: false, default: 'waiting'},
-	imgUrl: String,
 	answerID: String,
-	roomID: String
+	roomID: String,
+	question: {
+		imgUrl: String,
+		subject: String,
+		grade: String
+	}
 });
 
 var audioSliceSchema = new Schema({

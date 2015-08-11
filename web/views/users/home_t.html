@@ -12,6 +12,7 @@
 						<th>操作：</th>
 						<td>
 							<a href="#" class="btn btn-default" id="enterQueue" data-toggle="modal" data-target="#queue">进入答疑队列</a>
+							<a href="/answer/answers" class="btn btn-default">答疑列表</a>
 						</td>
 					</tr>
 				</table>				
@@ -28,7 +29,7 @@
 		connect.register('answer.match', function (data) {
 			console.log(data.answerID);
 			alert('匹配成功，进入房间！');
-			window.location.href='http://127.0.0.1:3001/room/get?id=' + data.roomID;
+			window.location.href='http://vgame.tv/room/get?id=' + data.roomID;
 		});
 
 		connect.send({	c: 'answer.enter_queue', 

@@ -12,16 +12,9 @@
 	connect.init(config.wsServerIP, config.wsServerPort, config.wsServerProtocol, function () {
 		connect.register('room.enter', function (data) {
 			if (data.status == 'success') {
-				$.get('http://127.0.0.1:6003/api/room/get?id=<%-room.roomID %>', function (data) {
-					data = JSON.parse(data);
-					if (data.code == 200) {
-						$('#result').html("进入页面成功！开始渲染页面.......<br>username: <%-user.username %>, role: <%-user.role %>");
-						//渲染页面
-					}
-				})
+				//进入页面成功，在此处开始渲染页面以及初始化
 			} else {
-				$('#result').html("进入页面失败！");
-				//提示错误!
+				window.location.href = "http://vgame.tv/common/error";
 			}
 		})
 		connect.send({	c: 'room.enter', 

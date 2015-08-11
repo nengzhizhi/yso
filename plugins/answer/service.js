@@ -17,6 +17,9 @@ module.exports = function(options){
 	seneca.add({role: 'answer', cmd: 'createAnswer'}, cmd_createAnswer);
 	seneca.add({role: 'answer', cmd: 'updateAnswer'}, cmd_updateAnswer);
 	seneca.add({role: 'answer', cmd: 'getAnswer'}, cmd_getAnswer);
+	seneca.add({role: 'answer', cmd: 'getAnswers'}, cmd_getAnswers);
+
+	seneca.add({role: 'answer', cmd: 'save'})
 
 	seneca.add({role: 'answer', cmd: 'addAudioSlice'}, cmd_addAudioSlice);
 	seneca.add({role: 'answer', cmd: 'getAudioSlice'}, cmd_getAudioSlice);
@@ -41,13 +44,15 @@ module.exports = function(options){
 		var student = args.data.student;
 		var roomID = args.data.roomID;
 		var answerID = args.data.answerID;
+		var question = args.data.question;
 
 		var answer = answerModel();
 		answer.teacher = teacher;
 		answer.student = student;
-		answer.audio = null;
 		answer.roomID = roomID;
 		answer.answerID = answerID;
+		answer.question = question;
+
 		answer.save(function (err) {
 			if (_.isEmpty(err)) {
 				callback(null, { status: 'success' });
@@ -78,6 +83,20 @@ module.exports = function(options){
 				callback(null, { status: 'fail' });
 			}
 		})
+	}
+
+	function cmd_getAnswers(args, callback){
+		answerModel
+		.find(args.data)
+		.sort({created : 1})
+		.exec(function (err, answers){
+			if (!_.isEmpty(answers)) {
+				callback(null, { status: 'success', answers: answers })
+			} else {
+				callback(null, null);
+			}
+		})
+
 	}
 
 	function cmd_addAudioSlice(args, callback){
@@ -122,14 +141,17 @@ module.exports = function(options){
 			async.waterfall([
 				function (next) {
 					seneca.act({role: 'room', cmd: 'schedule', data: {
-						teacher: teacher.username, student: student.username, answerID: answerID
+						teacher: teacher.username, student: student.username, question: student.question, answerID: answerID
 					}}, next)					
 				}
 			], function (err, result){
-				console.log(result);
 				if (result.status == 'success') {
 					seneca.act({role: 'answer', cmd: 'createAnswer', data: {
-						student: student.username, teacher: teacher.username, answerID: answerID, roomID: result.data.roomID
+						student: student.username,
+						question: student.question,
+						teacher: teacher.username, 
+						answerID: answerID, 
+						roomID: result.data.roomID
 					}})
 
 					seneca.act({role: 'keepAlive', cmd: 'broadcast', data: {
@@ -157,6 +179,7 @@ module.exports = function(options){
 		var username = args.data.username;
 		var role = args.data.role;
 		var token = args.data.token;
+		var question = args.data.question;
 
 		//TODO 检查是否有进入队列的权限
 		//如果已经在答疑中无法进入答疑队列
@@ -173,7 +196,7 @@ module.exports = function(options){
 					seneca.studentQueue.splice(key, 1);
 				}
 			}
-			seneca.studentQueue.push({ username: username, token: token })
+			seneca.studentQueue.push({ username: username, token: token, question: question })
 		}
 
 		callback(null, { status: 'success' });

@@ -10,8 +10,6 @@ module.exports = function(options) {
 
 	seneca.add({role:'users', cmd:'create'}, cmd_create);
 	seneca.add({role:'users', cmd:'getUser'}, cmd_getUser);
-	// seneca.add({role:'users', cmd:'checkLogin'}, cmd_checkLogin);
-	// seneca.add({role:'users', cmd:'sign'}, cmd_sign);
 
 
 	function cmd_create(args, callback){

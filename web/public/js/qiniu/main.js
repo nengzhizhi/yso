@@ -39,6 +39,7 @@ var uploader = Qiniu.uploader({
                             var res = JSON.parse(result);
                             var sourceLink = domain + res.key; //获取上传成功后的文件的Url
                             $('#questionImg').html('<img src="' + sourceLink + '" >');
+                            $('#imgUrlValue').val(sourceLink);
                             $('#answer').modal('show');
                     },
                     'Error': function(up, err, errTip) {

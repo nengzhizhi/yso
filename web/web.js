@@ -15,4 +15,5 @@ app.use(bodyParser.json());
 app.use(cookieParser('key'));
 app.use('/room', require('./controller/roomRouter'));
 app.use('/users', require('./controller/usersRouter'));
+app.use('/answer', require('./controller/answerRouter'));
 app.listen(3001);
