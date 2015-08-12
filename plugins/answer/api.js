@@ -12,6 +12,9 @@ module.exports = function(options){
 	seneca.act('role:web', { use: router(function (app) {
 		app.get('/api/answer/uploadToken', onUploadToken);
 		app.post('/api/answer/getAnswers', onGetAnswers);
+
+		app.post('/api/answer/getOperations', onGetOperations);
+
 		app.post('/api/answer/addAudioSlice', onAddAudioSlice);
 		app.post('/api/answer/concatAudioSlice', onConcatAudioSlice);
 		app.post('/api/answer/concatCallback', onConcatCallback);

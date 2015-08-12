@@ -19,6 +19,7 @@ module.exports = function(options){
 	seneca.add({role: 'room', cmd: 'enter_message'}, cmd_enter_message);
 	seneca.add({role: 'room', cmd: 'leave_message'}, cmd_leave_message);
 	seneca.add({role: 'room', cmd: 'close_message'}, cmd_close_message);
+	seneca.add({role: 'room', cmd: 'draw_message'}, cmd_draw_message);
 
 	function cmd_start(args, callback){
 		seneca.act({role: 'keepAlive', cmd: 'register', data: {
@@ -150,5 +151,10 @@ module.exports = function(options){
 		}
 
 		return callback(null, { status: 'fail' });
+	}
+
+	function cmd_draw_message(args, callback){
+		var roomID = args.data.roomID;
+		callback(null, null);
 	}
 }

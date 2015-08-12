@@ -2,6 +2,13 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 var ObjectId = Schema.ObjectId;
 
+
+var operationSchema = new Schema({
+	aid: String,
+	op: Array,
+	t: Number
+})
+
 var answerSchema = new Schema({
 	created: { type: Date, default: Date.now },
 	teacher: String,
@@ -24,5 +31,6 @@ var audioSliceSchema = new Schema({
 	created: { type: Date, default: Date.now }
 })
 
+exports.operationModel = mongoose.model('operation', operationSchema);
 exports.answerModel = mongoose.model('answer', answerSchema);
 exports.audioSliceModel = mongoose.model('audioSlice', audioSliceSchema);

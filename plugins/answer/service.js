@@ -4,6 +4,7 @@ var UUID =require('uuid');
 var seneca = require('seneca')();
 var answerModel = require('./model.js').answerModel;
 var audioSliceModel = require('./model.js').audioSliceModel;
+var operationModel = require('./model.js').operationModel;
 
 module.exports = function(options){
 	var seneca = this;
@@ -19,14 +20,14 @@ module.exports = function(options){
 	seneca.add({role: 'answer', cmd: 'getAnswer'}, cmd_getAnswer);
 	seneca.add({role: 'answer', cmd: 'getAnswers'}, cmd_getAnswers);
 
-	seneca.add({role: 'answer', cmd: 'save'})
+	seneca.add({role: 'answer', cmd: 'getOperations'}, cmd_getOperations);
 
 	seneca.add({role: 'answer', cmd: 'addAudioSlice'}, cmd_addAudioSlice);
 	seneca.add({role: 'answer', cmd: 'getAudioSlice'}, cmd_getAudioSlice);
 
 	seneca.add({role: 'answer', cmd: 'enter_queue_message'}, cmd_enter_queue_message);
 	seneca.add({role: 'answer', cmd: 'leave_queue_message'}, cmd_leave_queue_message);
-
+	seneca.add({role: 'answer', cmd: 'save_operation_message'}, cmd_save_operation_message);
 
 	function cmd_start(args, callback){
 		seneca.act({role: 'keepAlive', cmd: 'register', data: {
@@ -35,8 +36,11 @@ module.exports = function(options){
 		seneca.act({role: 'keepAlive', cmd: 'register', data: {
 			role: 'answer', cmd: 'leave_queue_message', type: 'message', c: 'answer.leave_queue'
 		}})
+		seneca.act({role: 'keepAlive', cmd: 'register', data: {
+			role: 'answer', cmd: 'save_operation_message', type: 'message', c: 'room.draw'
+		}})
 		setInterval(_matchAnswer, 2000);
-		callback(null, null);
+		callback(null, { status: 'success' });
 	}
 
 	function cmd_createAnswer(args, callback){
@@ -169,6 +173,45 @@ module.exports = function(options){
 				}
 			})
 		}
+	}
+
+	function cmd_getOperations(args, callback){
+		var answerID = args.data.answerID;
+		var start = args.data.start;
+		var count = args.data.count;
+
+		operationModel
+		.find({ aid: answerID })
+		.sort({ t: 1 })
+		.skip(start)
+		.batchSize(30000)
+		.limit(count)
+		.exec(function (err, operations) {
+			if (_.isEmpty(operations)) {
+				callback(null, { status: 'fail' })
+			} else {
+				callback(null, { status: 'success', data: { operations: operations }})
+			}
+		})
+	}
+
+	function cmd_save_operation_message(args, callback){
+		var aid = args.data.answerID;
+		var op = args.data.op;
+		var t = args.data.t;
+
+		var operation = new operationModel();
+		operation.aid = aid;
+		operation.op = op;
+		operation.t = t;
+
+		operation.save(function (err) {
+			if (_.isEmpty(err)) {
+				callback(null, { status: 'success' });
+			} else {
+				callback(null, { status: 'fail' });
+			}
+		})
 	}
 
 
